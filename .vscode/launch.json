@@ -1,32 +1,15 @@
 {
     "configurations": [
         {
-            "name": "(lldb) Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": [
-                "input",
-                "4",
-                "3",
-                "2.0"
-            ],
-            "stopAtEntry": true,
-            "cwd": "${fileDirname}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb"
-        },
-        {
             "name": "C/C++: g++ build and debug active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
             "args": [
                 "input",
-                "4",
-                "1",
-                "2"
+                "8239",
+                "175",
+                "186"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

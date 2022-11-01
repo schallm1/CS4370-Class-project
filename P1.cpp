@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
     unordered_multimap<float, string> geneMap;
     unordered_map<string, string> expressionMap;
     vector<string> finalGenes;
+    map<string, int> finalCtrl;
+    map<string, int> finalCase;
 
     if (argc !=5)
     {
@@ -47,9 +50,11 @@ int main(int argc, char *argv[])
         int genes = atoi(argv[2]);
         const int cases = atoi(argv[3]);
         const int controlCases = atoi(argv[4]);
+        const int matrixSize = controlCases+cases;
+
         int controlData[controlCases];
         int diseaseData[cases];
-        int matrix[4][3];
+        int *matrix = new int[genes*matrixSize];
 
         if(genes<=0 || cases<=0 || controlCases<=0)
         {
@@ -79,12 +84,12 @@ int main(int argc, char *argv[])
                 if((rowString[0] < '0' || rowString[0]> '1') && rowString[0] != '-')
                 {
                     diseaseData[y] = -2;
-                    matrix[x][y] = -2;
+                    *(matrix + x * matrixSize + y) = atoi(rowString.c_str());
                 }
                 else
                 {
                     diseaseData[y] = atoi(rowString.c_str());
-                    matrix[x][y] = atoi(rowString.c_str());
+                    *(matrix + x * matrixSize + y) = atoi(rowString.c_str());
                 }
             }
             for(int z = 0; z<controlCases; z++)
@@ -93,12 +98,12 @@ int main(int argc, char *argv[])
                 if((rowString[0] < '0' || rowString[0]> '1') && rowString[0] != '-')
                 {
                     controlData[z] = -2;
-                    matrix[x][z+cases] = -2;
+                    *(matrix + x * matrixSize + cases + z) = atoi(rowString.c_str());
                 }
                 else
                 {
                     controlData[z] = atoi(rowString.c_str());
-                    matrix[x][z+cases] = atoi(rowString.c_str());
+                    *(matrix + x * matrixSize + cases + z) = atoi(rowString.c_str());
                 }
             }
             for(int b = 0; b<cases; b++)
@@ -160,13 +165,14 @@ int main(int argc, char *argv[])
                 finalGenes.push_back(p1.first->second);
             }
                 unordered_map<string, string>::iterator it;
+                map<string, int>::iterator iter;
                 cout<< "Expression pattern:\n";
-                string exp[finalGenes.size()];
-                string def[finalGenes.size()];
+                string disease;
+                string ctrl;
                 for(int k = 0; k < finalGenes.size(); k++)
                 {
-                    exp[k] = "";
-                    def[k] = "";
+                    disease = "";
+                    ctrl = "";
                     it = expressionMap.find(finalGenes.at(k));
                     f = it->first[1];
                     place = f;
@@ -176,22 +182,31 @@ int main(int argc, char *argv[])
                     {
                         for(int f = 0; f<cases; f++)
                         {
-                            if(matrix[place][f] == -1)
+                            if(*(matrix + place*matrixSize +f)== -1)
                             {
-                                exp[k] += "D";
+                                disease += "D";
                                 num = f+1;
-                                exp[k] += to_string(num);
-                                exp[k] += " ";
+                                disease += to_string(num);
+                                if(finalCase.find(disease) == finalCase.end())
+                                {
+                                    finalCase.emplace(disease, 1);
+                                }
+                                disease = "";
+                                
                             }
                         }
                         for(int n = 0; n<controlCases; n++)
                         {
-                            if(matrix[place][n+cases] == 1 || matrix[place][n+cases] == 0 )
+                            if(*(matrix + place * matrixSize + (n+cases))== 1 || *(matrix + place * matrixSize + (n+cases)) == 0 )
                             {
-                                def[k] += "C"; 
+                                ctrl += "C"; 
                                 num = n+1;
-                                def[k] += to_string(num);
-                                def[k] += " ";
+                                ctrl += to_string(num);
+                                if(finalCtrl.find(ctrl) == finalCtrl.end())
+                                {
+                                    finalCtrl.emplace(ctrl, 1);
+                                }
+                                ctrl = "";
                             }
                         }
                     }
@@ -199,22 +214,30 @@ int main(int argc, char *argv[])
                     {
                         for(int g = 0; g<cases; g++)
                         {
-                            if(matrix[place][g] == 1)
+                            if(*(matrix + place * matrixSize + g) == 1)
                             {
-                                exp[k] += "D";
+                                disease += "D";
                                 num = g+1;
-                                exp[k] += to_string(num);
-                                exp[k] += " ";
+                                disease += to_string(num);
+                                if(finalCase.find(disease) == finalCase.end())
+                                {
+                                    finalCase.emplace(disease, 1);
+                                }
+                                disease = "";
                             }
                         }
                         for(int l = 0; l<controlCases; l++)
                         {
-                            if(matrix[place][l+cases] == -1 || matrix[place][l+cases] == 0 )
+                            if(*(matrix + place * matrixSize + (l+cases)) == -1 || *(matrix + place * matrixSize + (l+cases)) == 0 )
                             {
-                                def[k] += "C";
+                                ctrl += "C";
                                 num = l+1;
-                                def[k] += to_string(num);
-                                def[k] += " ";
+                                ctrl += to_string(num);
+                                if(finalCtrl.find(ctrl) == finalCtrl.end())
+                                {
+                                    finalCtrl.emplace(ctrl, 1);
+                                }
+                                ctrl = "";
                             }
                         }
                     }
@@ -222,38 +245,46 @@ int main(int argc, char *argv[])
                     {
                         for(int h = 0; h<cases; h++)
                         {
-                            if(matrix[place][h] == 0)
+                            if(*(matrix + place * matrixSize + h) == 0)
                             {
-                                exp[k]+= ("D");
+                                disease += ("D");
                                 num = h+1;
-                                exp[k] += to_string(num);
-                                exp[k] += " ";
+                                disease += to_string(num);
+                                if(finalCase.find(disease) == finalCase.end())
+                                {
+                                    finalCase.emplace(disease, 1);
+                                }
+                                disease = "";
                             }
                         }
                         for(int m = 0; m<controlCases; m++)
                         {
-                            if(matrix[place][m+cases] == -1 || matrix[place][m+cases] == 1 )
+                            if(*(matrix + place * matrixSize + (m+cases)) == -1 || *(matrix + place * matrixSize + (m+cases)) == 1 )
                             {
-                                def[k] += "C";
+                                ctrl += "C";
                                 num = m+1;
-                                def[k] += to_string(num);
-                                def[k] += " ";
+                                ctrl += to_string(num);
+                                if(finalCtrl.find(ctrl) == finalCtrl.end())
+                                {
+                                    finalCtrl.emplace(ctrl, 1);
+                                }
+                                ctrl = "";
                             }
                         }
                     }
                 }
                 cout << "Cases with pattern:" << endl;
-                for(int q = 0; q<finalGenes.size(); q++)
+                for(iter = finalCase.begin(); iter!=finalCase.end(); iter++)
                 {
-                    cout << exp[q] << " ";
+                    cout << iter->first << " ";
                 }
                 cout <<endl << "Controls with pattern: "<<endl;
-                for(int n = 0; n<finalGenes.size(); n++)
+                for(iter = finalCtrl.begin(); iter!=finalCtrl.end(); iter++)
                 {
-                    cout << def[n] << " ";
+                    cout << iter->first << " ";
                 }
                 cout << endl << endl << "j = " << youden;
-
+                delete[] matrix;
 
 }
 
