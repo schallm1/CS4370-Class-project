@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
                 file >> rowString;
             }
         }
-
+        //process gene discrete values
         for (int x = 0; x<genes; x++)
         {
             caseSum=0;
@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
             missingControl = 0;
             temp = 0;
             file >> gene;
+            //read in and assign to matrix as well as case and control arrays
             for(int y = 0; y<cases; y++)
             {
                 file >> rowString;
@@ -92,6 +93,7 @@ int main(int argc, char *argv[])
                     *(matrix + x * matrixSize + y) = atoi(rowString.c_str());
                 }
             }
+            //controls
             for(int z = 0; z<controlCases; z++)
             {
                 file >> rowString;
@@ -106,6 +108,7 @@ int main(int argc, char *argv[])
                     *(matrix + x * matrixSize + cases + z) = atoi(rowString.c_str());
                 }
             }
+            //sum up discrete values for youden calculation
             for(int b = 0; b<cases; b++)
             {
                 if(diseaseData[b]!=0 && diseaseData[b]!=-1 && diseaseData[b]!=1)
@@ -146,12 +149,13 @@ int main(int argc, char *argv[])
             controlSum = controlSum/(controlCases-missingControl);
 
             temp = caseSum - controlSum;
+            //map youdens to gene string
             if(temp<0)
             {
                 temp = 0-temp;
             }
             geneMap.insert(make_pair(temp, gene));
-
+            //find maximized youden
             youden = maxVal(temp, youden);
             if(youden<0)
             {
@@ -160,6 +164,7 @@ int main(int argc, char *argv[])
         }
             int buck = geneMap.bucket(youden);
             pair<unordered_multimap<float, string>::iterator, unordered_multimap<float,string>::iterator> p1 = geneMap.equal_range(youden);
+            //determine expressino pattern of identified genes
             for(; p1.first != p1.second; p1.first++)
             {
                 finalGenes.push_back(p1.first->second);
@@ -169,6 +174,7 @@ int main(int argc, char *argv[])
                 cout<< "Expression pattern:\n";
                 string disease;
                 string ctrl;
+                //determine which controls/diseases had the expression pattern
                 for(int k = 0; k < finalGenes.size(); k++)
                 {
                     disease = "";
@@ -273,6 +279,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
+                //print out cases/diseases with expression pattern
                 cout << "Cases with pattern:" << endl;
                 for(iter = finalCase.begin(); iter!=finalCase.end(); iter++)
                 {
